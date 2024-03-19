@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LaTeX Equation Editor</title>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            },
+            SVG: {
+                useGlobalCache: false
+            },
+            svg: {
+                fontCache: 'none'
+            },
+            startup: {
+                ready: () => {
+                    MathJax.startup.defaultReady();
+                }
+            }
+        };
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-svg.min.js"></script>
+    <style>
+        body, textarea, #latexPreview {
+            font-size: 14px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 100px;
+            margin-bottom: 10px;
+            padding: 8px;
+        }
+        #latexPreview {
+            border: 1px solid #ccc;
+            padding: 8px;
+            overflow-y: auto;
+            max-height: 300px;
+        }
+        button {
+            width: 100%;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <textarea id="latexInput" placeholder="Type LaTeX equation here..." oninput="updatePreview()"></textarea>
+    <div id="latexPreview">LaTeX preview will appear here...</div>
+    <input type="range" id="scaleSlider" min="1" max="5" value="1" step="0.5" oninput="updateScaleDisplay(this.value)">
+    <label for="scaleSlider">Scale Factor: <span id="scaleFactorDisplay">1</span></label>
+    <button onclick="insertIntoDoc()">Add to Document</button>
+    <button onclick="extractLatexFromImage()">Extract LaTeX</button>
+
+
+    <script>
+        function updateScaleDisplay(value) {
+          document.getElementById('scaleFactorDisplay').textContent = value;
+        }
+
+        // Set the initial scale factor display to match the slider's default value
+        updateScaleDisplay(document.getElementById('scaleSlider').value);
+
+        function updatePreview() {
+            let latexCode = document.getElementById('latexInput').value.trim();
+            let previewContainer = document.getElementById('latexPreview');
+            previewContainer.innerHTML = '$$' + latexCode + '$$';
+            MathJax.typesetPromise([previewContainer]).then(function () {
+                console.log('Preview updated and MathJax processing complete.');
+            }).catch(function (err) {
+                console.error('MathJax typesetting failed:', err);
+            });
+        }
+
+      function insertIntoDoc() {
+        let svgElement = document.querySelector('#latexPreview svg');
+        if (!svgElement) {
+            console.error("SVG element not found within preview.");
+            return;
+        }
+
+        const resolutionFactor = 10;
+        const scaleFactor = parseFloat(document.getElementById('scaleSlider').value);
+        const resolutionScaleFactor = resolutionFactor*scaleFactor;
+
+
+        let serializer = new XMLSerializer();
+        let svgContent = serializer.serializeToString(svgElement);
+        let blob = new Blob([svgContent], { type: "image/svg+xml;charset=utf-8" });
+        let url = URL.createObjectURL(blob);
+
+        let image = new Image();
+        image.onload = function () {
+            // Scale the canvas size up to increase the resolution of the output image.
+            let canvas = document.createElement('canvas');
+            canvas.width = image.width * resolutionScaleFactor;
+            canvas.height = image.height * resolutionScaleFactor;
+            let ctx = canvas.getContext('2d');
+
+            // Adjust the canvas drawing scale to match the increased canvas size,
+            // effectively increasing the resolution of the final image.
+            ctx.scale(resolutionScaleFactor, resolutionScaleFactor);
+            ctx.drawImage(image, 0, 0);
+
+            let pngDataUrl = canvas.toDataURL("image/png");
+            let latexCode = document.getElementById('latexInput').value.trim();
+
+            // Insert the high-resolution image into the Google Doc.
+            google.script.run.insertImage(pngDataUrl, image.width*scaleFactor, image.height*scaleFactor, latexCode);
+
+            URL.revokeObjectURL(url);
+        };
+        image.onerror = function () {
+            console.error("Error loading or rendering SVG as an image");
+            URL.revokeObjectURL(url);
+        };
+        image.src = url;
+    }
+
+        function extractLatexFromImage() {
+            google.script.run.withSuccessHandler(function(latex) {
+                document.getElementById('latexInput').value = latex;
+                updatePreview();
+            }).withFailureHandler(function(error) {
+                console.error("Error from server:", error);
+            }).getSelectedImageAltText();
+        }
+    </script>
+</body>
+</html>
