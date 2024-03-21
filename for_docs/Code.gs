@@ -7,7 +7,7 @@ function onOpen() {
 
 function showSidebar() {
     const sidebarHtml = HtmlService.createHtmlOutputFromFile('Sidebar')
-        .setTitle('LaTeX Equation Editor')
+        .setTitle('LaTeX Equation Editor 0.1.0')
         .setWidth(300);
     DocumentApp.getUi().showSidebar(sidebarHtml);
 }
@@ -15,40 +15,39 @@ function showSidebar() {
 function insertImage(dataUrl, adjustedWidth, adjustedHeight, altText) {
     // Decode the base64 image data to create a blob
     const imageBlob = Utilities.newBlob(Utilities.base64Decode(dataUrl.split(',')[1]), 'image/png');
-    
+
     // Get the active document and its cursor position
     const doc = DocumentApp.getActiveDocument();
     const cursor = doc.getCursor();
-    
+
     // Insert the image at the cursor's position or append at the document's end if no cursor found
     const image = cursor ? cursor.insertInlineImage(imageBlob) : doc.getBody().appendImage(imageBlob);
-    
+
     // Apply new dimensions and alt text to the inserted image
     image.setAltDescription(altText)
-         .setWidth(adjustedWidth)
-         .setHeight(adjustedHeight);
+        .setWidth(adjustedWidth)
+        .setHeight(adjustedHeight);
+    return { success: true };
 }
 
-function getSelectedImageAltText() {
+function getSelectedImageDescription() {
     const selection = DocumentApp.getActiveDocument().getSelection();
-    
-    if (selection) {
-        const elements = selection.getRangeElements();
-        
-        for (let i = 0; i < elements.length; i++) {
-            const element = elements[i].getElement();
-            
-            if (element.getType() === DocumentApp.ElementType.INLINE_IMAGE) {
-                const altText = element.asInlineImage().getAltDescription();
-                Logger.log("Alt text found: " + altText);
-                return altText;
-            }
-        }
-        
-        Logger.log("No inline image in selection.");
-    } else {
-        Logger.log("No selection.");
+
+    if (!selection) {
+        return { success: false, error: "no selection" };
     }
-    
-    return ''; // Return an empty string if no image is selected or found.
+
+    const elements = selection.getRangeElements();
+
+    for (let i = 0; i < elements.length; i++) {
+        const element = elements[i].getElement();
+
+        if (element.getType() === DocumentApp.ElementType.INLINE_IMAGE) {
+            const altText = element.asInlineImage().getAltDescription();
+            return { success: true, value: altText };
+        }
+    }
+
+
+    return { success: true, error: "no image in selection" };
 }
