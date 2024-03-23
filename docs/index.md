@@ -1,20 +1,8 @@
 # Welcome to the Latex Equation Editor
 
-## Features
+## Terms
 
-- Feature 1: Description
-- Feature 2: Description
-- Feature 3: Description
-
-## Installation
-
-1. Go to the Google Workspace Marketplace.
-2. Search for "My Google Add-on."
-3. Click Install.
-
-## Usage
-
-Briefly describe how to use your add-on.
+See our [Terms of Service](terms_for_docs.md) and [Privacy Policy](privacy_for_docs.md).
 
 ## Support
 

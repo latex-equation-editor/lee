@@ -22,19 +22,20 @@ function insertImage(dataUrl, adjustedWidth, adjustedHeight, altText) {
 
     // Insert the image at the cursor's position or append at the document's end if no cursor found
     const image = cursor ? cursor.insertInlineImage(imageBlob) : doc.getBody().appendImage(imageBlob);
-
+    const message = cursor ? "Image inserted at cursor." : "Image inserted at end of doc!";
+    const color = cursor ? "blue" : "#8B8000";
     // Apply new dimensions and alt text to the inserted image
     image.setAltDescription(altText)
         .setWidth(adjustedWidth)
         .setHeight(adjustedHeight);
-    return { success: true };
+    return { success: true, status: message, color: color };
 }
 
 function getSelectedImageDescription() {
     const selection = DocumentApp.getActiveDocument().getSelection();
 
     if (!selection) {
-        return { success: false, error: "no selection" };
+        return { success: false, status: "Select a Latex image." };
     }
 
     const elements = selection.getRangeElements();
@@ -49,5 +50,5 @@ function getSelectedImageDescription() {
     }
 
 
-    return { success: true, error: "no image in selection" };
+    return { success: false, status: "Select a Latex image." };
 }

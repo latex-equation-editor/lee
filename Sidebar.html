@@ -92,31 +92,45 @@
     <div id="messageBox" style="color: red; margin-top: 10px;"></div>
 
     <script>
+        function setMessageColor(color) {
+            document.getElementById('messageBox').style.color = color;
+        }
+
         function updateScaleDisplay(value) {
+            document.getElementById('messageBox').textContent = "";
             document.getElementById('scaleFactorDisplay').textContent = value;
         }
 
         // Set the initial scale factor display to match the slider's default value
         updateScaleDisplay(document.getElementById('scaleSlider').value);
 
-        function updatePreview() {
+
+        function updatePreview(message) {
+            updatePreviewWithMessage("")
+        }
+
+        function updatePreviewWithMessage(message) {
+            setMessageColor('blue');
+            document.getElementById('messageBox').textContent = message;
             let LaTexCode = document.getElementById('LaTexInput').value.trim();
             let previewContainer = document.getElementById('LaTexPreview');
             previewContainer.innerHTML = '$$' + LaTexCode + '$$';
             MathJax.typesetPromise([previewContainer]).then(function () {
                 console.log('Preview updated and MathJax processing complete.');
             }).catch(function (err) {
-                console.error('MathJax typesetting failed:', err);
+                console.status('MathJax typesetting failed:', err);
             });
         }
 
         function insertIntoDoc() {
-            document.getElementById('messageBox').textContent = "";
+            setMessageColor('#8B8000');
+            document.getElementById('messageBox').textContent = "Inserting image ...";
 
             let errorHeader = "Insert image error: ";
 
             let svgElement = document.querySelector('#LaTexPreview svg');
             if (!svgElement) {
+                setMessageColor('red');
                 document.getElementById('messageBox').textContent = errorHeader + "SVG element not found within preview.";
                 return;
             }
@@ -148,11 +162,23 @@
                 let LaTexCode = document.getElementById('LaTexInput').value.trim();
 
                 // Insert the high-resolution image into the Google Doc.
-                google.script.run.insertImage(pngDataUrl, image.width * scaleFactor, image.height * scaleFactor, '$$' + LaTexCode + '$$');
+                google.script.run.withSuccessHandler(function (result) {
+                    if (!result.success) {
+                        setMessageColor('red');
+                        document.getElementById('messageBox').textContent = errorHeader + maybe_description.status;
+                    } else {
+                        setMessageColor(result.color);
+                        document.getElementById('messageBox').textContent = result.status;
+                    }
+
+                }).withFailureHandler(function (error) {
+                    document.getElementById('messageBox').textContent = errorHeader + error;
+                }).insertImage(pngDataUrl, image.width * scaleFactor, image.height * scaleFactor, '$$' + LaTexCode + '$$');
 
                 URL.revokeObjectURL(url);
             };
             image.onerror = function () {
+                setMessageColor('red');
                 document.getElementById('messageBox').textContent = errorHeader + "error loading or rendering SVG as an image";
                 URL.revokeObjectURL(url);
             };
@@ -161,20 +187,25 @@
 
 
         function extractLaTexFromImage() {
-            document.getElementById('messageBox').textContent = "";
+            setMessageColor('#8B8000');
+            document.getElementById('messageBox').textContent = "Extracting Latex...";
             let errorHeader = "Extract LaTex error: ";
             google.script.run.withSuccessHandler(function (maybe_description) {
                 if (!maybe_description.success) {
-                    document.getElementById('messageBox').textContent = errorHeader + maybe_description.error;
-                }
-                let altText = maybe_description.value;
-                if (altText.startsWith('$$') && altText.endsWith('$$') && altText.length > 4) {
-                    document.getElementById('LaTexInput').value = altText.slice(2, -2);
-                    updatePreview();
+                    setMessageColor('red');
+                    document.getElementById('messageBox').textContent = errorHeader + maybe_description.status;
                 } else {
-                    document.getElementById('messageBox').textContent = errorHeader + "image is not a LaTex equation";
+                    let altText = maybe_description.value;
+                    if (altText.startsWith('$$') && altText.endsWith('$$') && altText.length > 4) {
+                        document.getElementById('LaTexInput').value = altText.slice(2, -2);
+                        updatePreviewWithMessage("latex extracted.");
+                    } else {
+                        setMessageColor('red');
+                        document.getElementById('messageBox').textContent = errorHeader + "image is not a LaTex equation";
+                    }
                 }
             }).withFailureHandler(function (error) {
+                setMessageColor('red');
                 document.getElementById('messageBox').textContent = errorHeader + error;
             }).getSelectedImageDescription();
         }

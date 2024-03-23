@@ -23,16 +23,16 @@ function insertImage(dataUrl, adjustedWidth, adjustedHeight, altText) {
         image.setHeight(adjustedHeight);
         image.setDescription(altText);
 
-        return { success: true };
+        return { success: true, status: "image inserted", color: "blue" };
     }
-    return { success: false, error: "no slide selected" };
+    return { success: false, status: "No slide selected!" };
 }
 
 function getSelectedImageDescription() {
     const selection = SlidesApp.getActivePresentation().getSelection();
 
     if (!selection) {
-        return { success: false, error: "no selection" };
+        return { success: false, status: "no selection" };
     }
 
     if (selection.getSelectionType() === SlidesApp.SelectionType.PAGE_ELEMENT) {
@@ -49,9 +49,9 @@ function getSelectedImageDescription() {
                 return { success: true, value: altText };
             }
         }
-        return { success: false, error: "selection is not a page element" };
+        return { success: false, status: "selection is not a page element" };
     }
 
-    return { success: false, error: "no image selected" };
+    return { success: false, status: "no image selected" };
 }
 
