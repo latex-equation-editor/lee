@@ -7,7 +7,7 @@ function onOpen() {
 
 function showSidebar() {
     const sidebarHtml = HtmlService.createHtmlOutputFromFile('Sidebar')
-        .setTitle('LaTeX Equation Editor 0.1.0')
+        .setTitle('LaTeX Equation Editor (for slides)')
         .setWidth(300);
     SlidesApp.getUi().showSidebar(sidebarHtml);
 }
@@ -23,16 +23,16 @@ function insertImage(dataUrl, adjustedWidth, adjustedHeight, altText) {
         image.setHeight(adjustedHeight);
         image.setDescription(altText);
 
-        return { success: true, status: "image inserted", color: "blue" };
+        return { success: true, color: 'blue', status: 'Image inserted at the top left.' };
     }
-    return { success: false, status: "No slide selected!" };
+    return { success: false, error: "No slide selected" };
 }
 
 function getSelectedImageDescription() {
     const selection = SlidesApp.getActivePresentation().getSelection();
 
     if (!selection) {
-        return { success: false, status: "no selection" };
+        return { success: false, error: "No image selected!" };
     }
 
     if (selection.getSelectionType() === SlidesApp.SelectionType.PAGE_ELEMENT) {
@@ -49,9 +49,9 @@ function getSelectedImageDescription() {
                 return { success: true, value: altText };
             }
         }
-        return { success: false, status: "selection is not a page element" };
+        return { success: false, error: "Selection is not an image!" };
     }
 
-    return { success: false, status: "no image selected" };
+    return { success: false, error: "No image selected!" };
 }
 

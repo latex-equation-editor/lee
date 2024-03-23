@@ -1,10 +1,14 @@
-# Privacy Policy
+# Latex Equation Editor D - Privacy Policy
 
 ## Collection and Use of Information
 
-Your privacy is of utmost importance to us. We assure you that the "Latex Equation Editor" Add-On
-does not collect or store any personal data.  We do not track your behavior through IP addresses
+Your privacy is of utmost importance to us. We assure you that the "Latex Equation Editor D" Add-On
+does not collect or store any personal data. We do not track your behavior through IP addresses
 or cookies.
+
+Latex Equation Editor D use and transfer to any other app of information received from Google APIs
+will adhere to [Google API Services User Data Policy](https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes),
+including the Limited Use requirements.
 
 ## Permissions
 

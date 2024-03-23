@@ -7,7 +7,7 @@ function onOpen() {
 
 function showSidebar() {
     const sidebarHtml = HtmlService.createHtmlOutputFromFile('Sidebar')
-        .setTitle('LaTeX Equation Editor 0.1.0')
+        .setTitle('LaTeX Equation Editor (for docs)')
         .setWidth(300);
     DocumentApp.getUi().showSidebar(sidebarHtml);
 }

@@ -1,1 +1,1 @@
-# lee
+# Latex Equation Editor
