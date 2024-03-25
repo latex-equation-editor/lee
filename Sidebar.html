@@ -122,26 +122,35 @@
             });
         }
 
+        function convertExToPixels(exUnits) {
+            // hardcoded hack (0.5 * 14) and a bit larger
+            // TDOD: find a better/more portable way to convert ex to pixels
+            return exUnits * 8;
+        }
+
         function insertIntoDoc() {
             setMessageColor('#8B8000');
             document.getElementById('messageBox').textContent = "Inserting image ...";
 
             let errorHeader = "Insert image error: ";
 
-            let svgElement = document.querySelector('#LaTexPreview svg');
-            if (!svgElement) {
+            let svgPreviewElement = document.querySelector('#LaTexPreview svg');
+            if (!svgPreviewElement) {
                 setMessageColor('red');
                 document.getElementById('messageBox').textContent = errorHeader + "SVG element not found within preview.";
                 return;
             }
 
+            const svgElement = document.querySelector('svg');
+            const svgWidth = convertExToPixels(parseFloat(svgElement.getAttribute('width')));
+            const svgHeight = convertExToPixels(parseFloat(svgElement.getAttribute('height')));
+
             const resolutionFactor = 10;
             const scaleFactor = parseFloat(document.getElementById('scaleSlider').value);
             const resolutionScaleFactor = resolutionFactor * scaleFactor;
 
-
             let serializer = new XMLSerializer();
-            let svgContent = serializer.serializeToString(svgElement);
+            let svgContent = serializer.serializeToString(svgPreviewElement);
             let blob = new Blob([svgContent], { type: "image/svg+xml;charset=utf-8" });
             let url = URL.createObjectURL(blob);
 
@@ -149,8 +158,8 @@
             image.onload = function () {
                 // Scale the canvas size up to increase the resolution of the output image.
                 let canvas = document.createElement('canvas');
-                canvas.width = image.width * resolutionScaleFactor;
-                canvas.height = image.height * resolutionScaleFactor;
+                canvas.width = svgWidth * resolutionScaleFactor;
+                canvas.height = svgHeight * resolutionScaleFactor;
                 let ctx = canvas.getContext('2d');
 
                 // Adjust the canvas drawing scale to match the increased canvas size,
@@ -173,7 +182,7 @@
 
                 }).withFailureHandler(function (error) {
                     document.getElementById('messageBox').textContent = errorHeader + error;
-                }).insertImage(pngDataUrl, image.width * scaleFactor, image.height * scaleFactor, '$$' + LaTexCode + '$$');
+                }).insertImage(pngDataUrl, svgWidth * scaleFactor, svgHeight * scaleFactor, '$$' + LaTexCode + '$$');
 
                 URL.revokeObjectURL(url);
             };

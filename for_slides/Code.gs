@@ -7,7 +7,7 @@ function onOpen() {
 
 function showSidebar() {
     const sidebarHtml = HtmlService.createHtmlOutputFromFile('Sidebar')
-        .setTitle('LaTeX Equation Editor (for slides)')
+        .setTitle('LaTeX Equation Editor')
         .setWidth(300);
     SlidesApp.getUi().showSidebar(sidebarHtml);
 }
